@@ -1,0 +1,30 @@
+name: Build/Push custom workbench docker image
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  custom_workbench_images:
+    name: Docker - Build and Deploy Images
+    runs-on: oneai-runner
+    environment: dev
+    env:
+      REGISTRY: ${{ secrets.REGISTRY }}
+    steps:
+      - name: Checkout the Github
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${REGISTRY}
+    
+      - name: Build custom docker workbench image
+        run: |
+          docker build -f <Dockerfile_name> -t ${REGISTRY}/<custom_workbench_name>:latest .
+    
+      - name: Push built custom docker workbench image to ECR
+        run: |
+         docker push ${REGISTRY}/<custom_workbench_name>:latest
